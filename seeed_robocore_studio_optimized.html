@@ -1,0 +1,2335 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Seeed RoboCore Studio - Optimized</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --seeed-green: #00D5A4;
+            --seeed-dark: #1A1A2E;
+            --seeed-light: #F5F5F5;
+            --primary-color: #00D5A4;
+            --secondary-color: #FF6B6B;
+            --accent-color: #4ECDC4;
+            --background-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            --card-bg: rgba(255, 255, 255, 0.95);
+            --border-radius: 12px;
+            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: var(--background-gradient);
+            min-height: 100vh;
+            color: #333;
+            overflow-x: hidden;
+        }
+
+        .main-container {
+            display: grid;
+            grid-template-columns: 320px 1fr 380px;
+            grid-template-rows: auto 1fr;
+            gap: 15px;
+            height: 100vh;
+            padding: 15px;
+        }
+
+        /* 顶部品牌栏 */
+        .brand-header {
+            grid-column: 1 / -1;
+            background: var(--card-bg);
+            border-radius: var(--border-radius);
+            padding: 15px 20px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            backdrop-filter: blur(10px);
+            text-align: center;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .brand-title {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .brand-logo {
+            width: 40px;
+            height: 40px;
+            background: var(--seeed-green);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            color: white;
+            font-weight: bold;
+        }
+
+        .brand-title h1 {
+            background: linear-gradient(135deg, #00D5A4 0%, #4ECDC4 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            font-size: 1.8rem;
+            font-weight: 700;
+            margin: 0;
+        }
+
+        .connection-status {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 0.9rem;
+            padding: 8px 15px;
+            background: #F8F9FA;
+            border-radius: 8px;
+            border: 1px solid #E9ECEF;
+        }
+
+        .status-indicator {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: var(--secondary-color);
+            animation: pulse 2s infinite;
+            transition: var(--transition);
+        }
+
+        .status-indicator.connected {
+            background: var(--seeed-green);
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.6; transform: scale(1.1); }
+        }
+
+        /* 面板基础样式 */
+        .panel {
+            background: var(--card-bg);
+            border-radius: var(--border-radius);
+            padding: 15px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            transition: var(--transition);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .panel:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.15);
+        }
+
+        .panel-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 12px;
+            padding-bottom: 8px;
+            border-bottom: 2px solid #E9ECEF;
+            flex-shrink: 0;
+        }
+
+        .panel-title {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 0.95rem;
+            font-weight: 600;
+            color: #2D3748;
+        }
+
+        .panel-icon {
+            width: 22px;
+            height: 22px;
+            background: linear-gradient(135deg, var(--seeed-green), var(--accent-color));
+            border-radius: 5px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 12px;
+        }
+
+        /* 左侧面板 - 设备管理 */
+        .left-panel {
+            grid-row: 2;
+        }
+
+        /* 中间面板 - 主要内容 */
+        .center-panel {
+            grid-row: 2;
+        }
+
+        /* 右侧面板 - 日志 */
+        .right-panel {
+            grid-row: 2;
+        }
+
+        /* 快速操作按钮 */
+        .quick-actions {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+            margin-bottom: 12px;
+        }
+
+        .button {
+            background: var(--seeed-green);
+            color: white;
+            border: none;
+            padding: 8px 12px;
+            border-radius: 6px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 4px;
+            box-shadow: 0 4px 12px rgba(0, 213, 164, 0.3);
+        }
+
+        .button:hover {
+            background: #00B894;
+            transform: translateY(-1px);
+            box-shadow: 0 6px 20px rgba(0, 213, 164, 0.4);
+        }
+
+        .button.danger {
+            background: var(--secondary-color);
+            box-shadow: 0 4px 12px rgba(255, 107, 107, 0.3);
+        }
+
+        .button.danger:hover {
+            background: #FF5252;
+            box-shadow: 0 6px 20px rgba(255, 107, 107, 0.4);
+        }
+
+        .button.warning {
+            background: #F59E0B;
+            box-shadow: 0 4px 12px rgba(245, 158, 11, 0.3);
+        }
+
+        .button.warning:hover {
+            background: #D97706;
+            box-shadow: 0 6px 20px rgba(245, 158, 11, 0.4);
+        }
+
+        /* 扫描状态 */
+        .scan-status {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 10px;
+            background: #F0F9FF;
+            border: 1px solid #BAE6FD;
+            border-radius: 4px;
+            font-size: 0.7rem;
+            color: #0369A1;
+            margin-bottom: 8px;
+            flex-shrink: 0;
+        }
+
+        .loading {
+            width: 14px;
+            height: 14px;
+            border: 2px solid #E0E0E0;
+            border-radius: 50%;
+            border-top-color: var(--seeed-green);
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* 设备列表 */
+        .servo-list {
+            flex: 1;
+            overflow-y: auto;
+            margin-bottom: 8px;
+            overflow-x: hidden;
+        }
+
+        .servo-item {
+            background: #F8F9FA;
+            border: 2px solid #E9ECEF;
+            border-radius: 6px;
+            padding: 8px;
+            margin-bottom: 6px;
+            cursor: pointer;
+            transition: var(--transition);
+            position: relative;
+        }
+
+        .servo-item:hover {
+            background: #E8F5E8;
+            border-color: var(--seeed-green);
+            transform: translateX(2px);
+        }
+
+        .servo-item.selected {
+            background: #E8F5E8;
+            border-color: var(--seeed-green);
+        }
+
+        .servo-id {
+            font-size: 0.85rem;
+            font-weight: 700;
+            color: #2D3748;
+            margin-bottom: 3px;
+        }
+
+        .servo-info {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.7rem;
+            color: #718096;
+            margin-bottom: 3px;
+        }
+
+        .servo-details {
+            font-size: 0.65rem;
+            color: #A0AEC0;
+            display: flex;
+            gap: 6px;
+        }
+
+        .servo-detail-item {
+            display: flex;
+            align-items: center;
+            gap: 2px;
+        }
+
+        .status-dot {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: #28A745;
+        }
+
+        /* 标签导航 */
+        .tab-container {
+            display: flex;
+            background: #F8F9FA;
+            border-radius: 6px;
+            padding: 2px;
+            margin-bottom: 12px;
+            border: 1px solid #E9ECEF;
+            flex-shrink: 0;
+        }
+
+        .tab {
+            flex: 1;
+            padding: 6px 10px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: 500;
+            color: #718096;
+            background: transparent;
+            transition: var(--transition);
+            font-size: 0.7rem;
+        }
+
+        .tab:hover {
+            background: rgba(0, 213, 164, 0.1);
+        }
+
+        .tab.active {
+            background: var(--seeed-green);
+            color: white;
+            box-shadow: 0 2px 8px rgba(0, 213, 164, 0.3);
+        }
+
+        .tab-content {
+            display: none;
+            animation: fadeIn 0.3s ease-in-out;
+            flex: 1;
+            overflow-y: auto;
+            min-height: 0;
+        }
+
+        .tab-content.active {
+            display: flex;
+            flex-direction: column;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* 控制组件 */
+        .control-group {
+            margin-bottom: 12px;
+        }
+
+        .control-group label {
+            display: block;
+            margin-bottom: 4px;
+            font-weight: 600;
+            color: #2D3748;
+            font-size: 0.75rem;
+        }
+
+        .control-group input, .control-group select {
+            width: 100%;
+            padding: 6px 10px;
+            border: 1px solid #CBD5E0;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            transition: var(--transition);
+            background: white;
+        }
+
+        .control-group input:focus, .control-group select:focus {
+            outline: none;
+            border-color: var(--seeed-green);
+            box-shadow: 0 0 0 3px rgba(0, 213, 164, 0.1);
+        }
+
+        /* 滑块样式 */
+        .slider-container {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 8px;
+        }
+
+        .slider {
+            flex: 1;
+            -webkit-appearance: none;
+            appearance: none;
+            height: 5px;
+            border-radius: 3px;
+            background: #E9ECEF;
+            outline: none;
+            transition: var(--transition);
+        }
+
+        .slider:hover {
+            background: #DEE2E6;
+        }
+
+        .slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            background: var(--seeed-green);
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .slider::-webkit-slider-thumb:hover {
+            background: #00B894;
+            transform: scale(1.1);
+        }
+
+        .slider-value {
+            min-width: 45px;
+            text-align: center;
+            font-weight: 600;
+            color: var(--seeed-green);
+            background: #E8F5E8;
+            padding: 3px 6px;
+            border-radius: 3px;
+            border: 1px solid var(--seeed-green);
+            font-size: 0.7rem;
+        }
+
+        /* 内存表格 */
+        .memory-table-container {
+            flex: 1;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .memory-table-header {
+            display: grid;
+            grid-template-columns: 55px 130px 180px 130px 70px 85px 70px;
+            gap: 6px;
+            padding: 8px;
+            background: #F8F9FA;
+            border: 1px solid #E9ECEF;
+            border-radius: 5px;
+            font-weight: 600;
+            font-size: 0.7rem;
+            color: #2D3748;
+            margin-bottom: 6px;
+            flex-shrink: 0;
+        }
+
+        .memory-table-body {
+            flex: 1;
+            overflow-y: auto;
+            border: 1px solid #E9ECEF;
+            border-radius: 6px;
+        }
+
+        .memory-row {
+            display: grid;
+            grid-template-columns: 55px 130px 180px 130px 70px 85px 70px;
+            gap: 6px;
+            padding: 6px;
+            border-bottom: 1px solid #F0F0F0;
+            align-items: center;
+            transition: var(--transition);
+            font-size: 0.7rem;
+        }
+
+        .memory-row:hover {
+            background: #F8F9FA;
+        }
+
+        .memory-row.eeprom {
+            background: #FFF7ED;
+        }
+
+        .memory-row.eeprom:hover {
+            background: #FED7AA;
+        }
+
+        .memory-row.ram {
+            background: #F0F9FF;
+        }
+
+        .memory-row.ram:hover {
+            background: #BAE6FD;
+        }
+
+        .memory-address {
+            font-weight: 600;
+            color: #4A5568;
+        }
+
+        .memory-name {
+            color: #2D3748;
+        }
+
+        .memory-description {
+            color: #718096;
+            font-size: 0.65rem;
+        }
+
+        .memory-type {
+            font-size: 0.65rem;
+            padding: 2px 4px;
+            border-radius: 3px;
+            text-align: center;
+        }
+
+        .memory-type.eeprom {
+            background: #ED8936;
+            color: white;
+        }
+
+        .memory-type.ram {
+            background: #4299E1;
+            color: white;
+        }
+
+        .memory-access {
+            font-size: 0.65rem;
+            padding: 2px 4px;
+            border-radius: 3px;
+            text-align: center;
+        }
+
+        .memory-access.rw {
+            background: #48BB78;
+            color: white;
+        }
+
+        .memory-access.ro {
+            background: #E53E3E;
+            color: white;
+        }
+
+        .memory-value {
+            font-family: 'SF Mono', Monaco, 'Cascadia Code', 'Roboto Mono', Consolas, 'Courier New', monospace;
+            font-weight: 600;
+            color: #2D3748;
+            font-size: 0.65rem;
+        }
+
+        .memory-actions {
+            display: flex;
+            gap: 3px;
+        }
+
+        .mini-button {
+            padding: 3px 5px;
+            border: none;
+            border-radius: 3px;
+            cursor: pointer;
+            font-size: 0.6rem;
+            transition: var(--transition);
+        }
+
+        .mini-button.read {
+            background: #4299E1;
+            color: white;
+        }
+
+        .mini-button.read:hover {
+            background: #3182CE;
+        }
+
+        .mini-button.write {
+            background: #48BB78;
+            color: white;
+        }
+
+        .mini-button.write:hover {
+            background: #38A169;
+        }
+
+        /* 状态显示 */
+        .status-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .status-item {
+            background: #F8F9FA;
+            border: 1px solid #E9ECEF;
+            border-radius: 6px;
+            padding: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .status-label {
+            font-size: 0.8rem;
+            color: #718096;
+        }
+
+        .status-value {
+            font-weight: 600;
+            color: #2D3748;
+        }
+
+        /* 日志 */
+        .log-container {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .log-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 10px;
+            flex-shrink: 0;
+        }
+
+        .log {
+            background: var(--seeed-dark);
+            color: #E2E8F0;
+            border-radius: 8px;
+            padding: 12px;
+            font-family: 'SF Mono', Monaco, 'Cascadia Code', 'Roboto Mono', Consolas, 'Courier New', monospace;
+            font-size: 0.75rem;
+            overflow-y: auto;
+            white-space: pre-wrap;
+            flex: 1;
+        }
+
+        .log-entry {
+            margin-bottom: 2px;
+            padding: 1px 0;
+            border-left: 2px solid transparent;
+            padding-left: 6px;
+        }
+
+        .log-entry:hover {
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .log-entry.info { color: #63B3ED; border-left-color: #63B3ED; }
+        .log-entry.success { color: #68D391; border-left-color: #68D391; }
+        .log-entry.warning { color: #F6E05E; border-left-color: #F6E05E; }
+        .log-entry.error { color: #FC8181; border-left-color: #FC8181; }
+
+        /* 空状态 */
+        .empty-state {
+            text-align: center;
+            padding: 15px;
+            color: #718096;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .empty-icon {
+            font-size: 1.5rem;
+            margin-bottom: 8px;
+            opacity: 0.5;
+        }
+
+        .empty-title {
+            font-size: 0.85rem;
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+
+        .empty-description {
+            font-size: 0.7rem;
+            line-height: 1.4;
+        }
+
+        /* 标定选择器 */
+        .calibration-selector {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 8px;
+            margin-bottom: 15px;
+        }
+
+        .calibration-card {
+            background: white;
+            border: 2px solid #E9ECEF;
+            border-radius: 8px;
+            padding: 12px;
+            cursor: pointer;
+            transition: var(--transition);
+            text-align: center;
+        }
+
+        .calibration-card:hover {
+            border-color: var(--seeed-green);
+            background: #F0FDF4;
+        }
+
+        .calibration-card.active {
+            border-color: var(--seeed-green);
+            background: #E8F5E8;
+        }
+
+        .cal-icon {
+            font-size: 1.5rem;
+            margin-bottom: 4px;
+        }
+
+        .cal-title {
+            font-weight: 600;
+            color: #2D3748;
+            margin-bottom: 2px;
+            font-size: 0.85rem;
+        }
+
+        .cal-description {
+            font-size: 0.7rem;
+            color: #718096;
+        }
+
+        /* 响应式设计 */
+        @media (max-width: 1400px) {
+            .main-container {
+                grid-template-columns: 280px 1fr 320px;
+            }
+        }
+
+        @media (max-width: 1200px) {
+            .main-container {
+                grid-template-columns: 1fr;
+                grid-template-rows: auto auto 1fr auto;
+            }
+
+            .left-panel,
+            .right-panel {
+                grid-row: auto;
+            }
+        }
+
+        /* 手动校准模式 */
+        .manual-mode {
+            background: #FFF7ED;
+            border: 2px solid #FED7AA;
+            border-radius: 8px;
+            padding: 12px;
+            margin-bottom: 15px;
+        }
+
+        .manual-mode-header {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 8px;
+            color: #EA580C;
+            font-weight: 600;
+            font-size: 0.85rem;
+        }
+
+        .torque-button {
+            background: #F59E0B;
+            color: white;
+            border: none;
+            padding: 8px 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: var(--transition);
+            font-weight: 500;
+            font-size: 0.8rem;
+        }
+
+        .torque-button:hover {
+            background: #D97706;
+        }
+
+        .torque-button.active {
+            background: #DC2626;
+        }
+
+        /* 快速预设按钮 */
+        .preset-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 6px;
+        }
+
+        .preset-button {
+            background: white;
+            border: 1px solid #CBD5E0;
+            border-radius: 6px;
+            padding: 8px;
+            cursor: pointer;
+            transition: var(--transition);
+            font-size: 0.8rem;
+        }
+
+        .preset-button:hover {
+            border-color: var(--seeed-green);
+            background: #E8F5E8;
+        }
+
+        /* 表格搜索过滤 */
+        .table-controls {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+
+        .search-input {
+            flex: 1;
+            padding: 8px 12px;
+            border: 1px solid #CBD5E0;
+            border-radius: 6px;
+            font-size: 0.8rem;
+        }
+
+        .filter-button {
+            padding: 8px 12px;
+            background: white;
+            border: 1px solid #CBD5E0;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.8rem;
+            transition: var(--transition);
+        }
+
+        .filter-button.active {
+            background: var(--seeed-green);
+            color: white;
+            border-color: var(--seeed-green);
+        }
+    </style>
+</head>
+<body>
+    <div class="main-container">
+        <!-- 顶部品牌栏 -->
+        <div class="brand-header">
+            <div class="brand-title">
+                <div class="brand-logo">S</div>
+                <h1>Seeed RoboCore Studio</h1>
+            </div>
+            <div class="connection-status">
+                <div class="status-indicator" id="statusIndicator"></div>
+                <span id="connectionStatus">正在连接服务器...</span>
+            </div>
+        </div>
+
+        <!-- 左侧面板 - 设备管理 -->
+        <div class="panel left-panel">
+            <div class="panel-header">
+                <div class="panel-title">
+                    <div class="panel-icon">🔧</div>
+                    <span>设备管理</span>
+                </div>
+            </div>
+
+            <!-- 快速操作 -->
+            <div class="quick-actions">
+                <button class="button" onclick="scanServos()">
+                    <span>🔍</span> 重新扫描
+                </button>
+                <button class="button warning" onclick="startCalibration()">
+                    <span>⚙️</span> 设备标定
+                </button>
+            </div>
+
+            <!-- 扫描状态 -->
+            <div id="scanStatus" style="display: none;" class="scan-status">
+                <div class="loading"></div>
+                <span>正在扫描设备...</span>
+            </div>
+
+            <!-- 设备列表 -->
+            <div class="servo-list" id="servoList">
+                <div class="empty-state">
+                    <div class="empty-icon">🤖</div>
+                    <div class="empty-title">未发现设备</div>
+                    <div class="empty-description">点击"重新扫描"按钮来搜索连接的舵机</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 中间面板 - 主要内容 -->
+        <div class="panel center-panel">
+            <div class="panel-header">
+                <div class="panel-title">
+                    <div class="panel-icon">🎛️</div>
+                    <span>控制中心</span>
+                </div>
+            </div>
+
+            <!-- 标签导航 -->
+            <div class="tab-container">
+                <button class="tab active" onclick="switchTab('control')">实时控制</button>
+                <button class="tab" onclick="switchTab('memory')">内存表格</button>
+                <button class="tab" onclick="switchTab('calibration')">设备标定</button>
+            </div>
+
+            <!-- 实时控制标签页 -->
+            <div id="control-tab" class="tab-content active">
+                <div id="controlPanel">
+                    <div class="empty-state">
+                        <div class="empty-icon">🎮</div>
+                        <div class="empty-title">请选择设备</div>
+                        <div class="empty-description">从左侧设备列表中选择一个舵机开始控制</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 内存表格标签页 -->
+            <div id="memory-tab" class="tab-content">
+                <div class="memory-table-container">
+                    <!-- 表格控制 -->
+                    <div class="table-controls">
+                        <input type="text" class="search-input" placeholder="搜索内存地址或名称..." oninput="filterMemoryTable(this.value)">
+                        <button class="filter-button active" onclick="filterMemoryType('all')">全部</button>
+                        <button class="filter-button" onclick="filterMemoryType('eeprom')">EEPROM</button>
+                        <button class="filter-button" onclick="filterMemoryType('ram')">RAM</button>
+                    </div>
+
+                    <!-- 表格头部 -->
+                    <div class="memory-table-header">
+                        <div>地址</div>
+                        <div>名称</div>
+                        <div>描述</div>
+                        <div>类型</div>
+                        <div>访问</div>
+                        <div>当前值</div>
+                        <div>操作</div>
+                    </div>
+
+                    <!-- 表格内容 -->
+                    <div class="memory-table-body" id="memoryTableBody">
+                        <!-- 动态生成内容 -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- 设备标定标签页 -->
+            <div id="calibration-tab" class="tab-content">
+                <div id="calibrationPanel">
+                    <!-- 标定项目选择器 -->
+                    <div class="calibration-selector">
+                        <div class="calibration-card" id="cal-id" onclick="selectCalibrationType('id')">
+                            <div class="cal-icon">🏷️</div>
+                            <div class="cal-title">ID配置</div>
+                            <div class="cal-description">设置舵机ID</div>
+                        </div>
+                        <div class="calibration-card" id="cal-temp" onclick="selectCalibrationType('temperature')">
+                            <div class="cal-icon">🌡️</div>
+                            <div class="cal-title">温度限制</div>
+                            <div class="cal-description">温度保护阈值</div>
+                        </div>
+                        <div class="calibration-card" id="cal-center" onclick="selectCalibrationType('center')">
+                            <div class="cal-icon">🎯</div>
+                            <div class="cal-title">中位校准</div>
+                            <div class="cal-description">手动校准中位</div>
+                        </div>
+                    </div>
+
+                    <!-- 标定内容区域 -->
+                    <div id="calibrationContent">
+                        <div class="empty-state">
+                            <div class="empty-icon">🎯</div>
+                            <div class="empty-title">选择标定项目</div>
+                            <div class="empty-description">点击上方标定卡片开始具体的标定操作</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 右侧面板 - 日志和状态 -->
+        <div class="panel right-panel">
+            <!-- 状态显示 -->
+            <div class="panel-header">
+                <div class="panel-title">
+                    <div class="panel-icon">📊</div>
+                    <span>状态监控</span>
+                </div>
+            </div>
+
+            <div id="statusPanel" style="margin-bottom: 15px;">
+                <div class="empty-state">
+                    <div class="empty-icon">📈</div>
+                    <div class="empty-title">选择设备查看状态</div>
+                    <div class="empty-description">设备状态信息将在此处显示</div>
+                </div>
+            </div>
+
+            <!-- 系统日志 -->
+            <div class="log-container">
+                <div class="log-header">
+                    <div class="panel-title">
+                        <div class="panel-icon">📝</div>
+                        <span>系统日志</span>
+                    </div>
+                    <button class="mini-button" onclick="clearLog()" style="font-size: 0.7rem;">清空</button>
+                </div>
+                <div class="log" id="logContent">
+                    <div class="log-entry info">[系统] Seeed RoboCore Studio 初始化完成</div>
+                    <div class="log-entry info">[系统] 正在连接服务器...</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        class SeeedRoboCoreController {
+            constructor() {
+                this.ws = null;
+                this.selectedServoId = null;
+                this.reconnectAttempts = 0;
+                this.maxReconnectAttempts = 5;
+                this.calibrationData = {
+                    servoId: null,
+                    temperatureLimit: 75,
+                    centerPosition: 2048
+                };
+
+                // 实时控制相关变量
+                this.controlMode = 'manual';
+                this.realtimeEnabled = false;
+                this.lastMoveTime = 0;
+                this.moveDebounceDelay = 50;
+
+                // 内存数据
+                this.memoryData = new Map();
+
+                this.init();
+            }
+
+            init() {
+                this.connect();
+                this.addLog('[系统] Seeed RoboCore Studio 初始化完成', 'success');
+                this.addLog('[系统] 正在连接服务器...', 'info');
+
+                // 初始化内存表格数据
+                this.initializeMemoryTable();
+            }
+
+            connect() {
+                this.ws = new WebSocket('ws://localhost:8765');
+
+                this.ws.onopen = () => {
+                    this.addLog('[WebSocket] 服务器连接成功', 'success');
+                    this.updateConnectionStatus(true);
+                    this.reconnectAttempts = 0;
+                };
+
+                this.ws.onmessage = (event) => {
+                    const message = JSON.parse(event.data);
+                    this.handleMessage(message);
+                };
+
+                this.ws.onclose = () => {
+                    this.addLog('[WebSocket] 连接断开', 'warning');
+                    this.updateConnectionStatus(false);
+                    this.attemptReconnect();
+                };
+
+                this.ws.onerror = (error) => {
+                    this.addLog(`[WebSocket] 连接错误: ${error}`, 'error');
+                    this.updateConnectionStatus(false);
+                };
+            }
+
+            attemptReconnect() {
+                if (this.reconnectAttempts < this.maxReconnectAttempts) {
+                    this.reconnectAttempts++;
+                    this.addLog(`[系统] 尝试重连 (${this.reconnectAttempts}/${this.maxReconnectAttempts})`, 'info');
+                    setTimeout(() => this.connect(), 3000);
+                } else {
+                    this.addLog('[系统] 达到最大重连次数', 'error');
+                }
+            }
+
+            handleMessage(message) {
+                switch (message.type) {
+                    case 'connection':
+                        this.handleConnection(message);
+                        break;
+                    case 'scan_result':
+                        this.handleScanResult(message);
+                        break;
+                    case 'servo_status':
+                        this.handleServoStatus(message);
+                        break;
+                    case 'move_result':
+                        this.handleMoveResult(message);
+                        break;
+                    case 'memory_read':
+                        this.handleMemoryRead(message);
+                        break;
+                    case 'firmware_info':
+                        this.handleFirmwareInfo(message);
+                        break;
+                    case 'pid_params':
+                        this.handlePidParams(message);
+                        break;
+                    case 'temperature_limit_read':
+                        this.handleTemperatureLimit(message);
+                        break;
+                    case 'servo_id_set_result':
+                        this.handleServoIdSetResult(message);
+                        break;
+                    case 'error':
+                        this.addLog(`[服务器] 错误: ${message.message}`, 'error');
+                        break;
+                    default:
+                        this.addLog(`[系统] 未知消息类型: ${message.type}`, 'warning');
+                }
+            }
+
+            initializeMemoryTable() {
+                // FTServo 增强版内存映射表 (基于逆向工程分析)
+                const memoryMap = [
+                    // EPROM区域 - 固件信息 (只读)
+                    { address: 0, name: "固件主版本", description: "舵机固件主要版本号", type: "EEPROM", access: "RO", defaultValue: 3 },
+                    { address: 1, name: "固件副版本", description: "舵机固件次要版本号", type: "EEPROM", access: "RO", defaultValue: 10 },
+                    { address: 2, name: "保留字段", description: "系统保留字段", type: "EEPROM", access: "RO", defaultValue: 0 },
+                    { address: 3, name: "舵机主版本", description: "舵机硬件主要版本号", type: "EEPROM", access: "RO", defaultValue: 9 },
+                    { address: 4, name: "舵机副版本", description: "舵机硬件次要版本号", type: "EEPROM", access: "RO", defaultValue: 3 },
+
+                    // EPROM区域 - 基本配置 (读写)
+                    { address: 5, name: "ID", description: "舵机通信ID标识", type: "EEPROM", access: "RW", defaultValue: 1 },
+                    { address: 6, name: "波特率", description: "串口通信波特率设置", type: "EEPROM", access: "RW", defaultValue: 1 },
+                    { address: 7, name: "保留字节", description: "系统保留字节", type: "EEPROM", access: "RW", defaultValue: 0 },
+
+                    // EPROM区域 - 状态控制 (读写)
+                    { address: 8, name: "状态返回级别", description: "控制舵机响应状态信息的详细程度", type: "EEPROM", access: "RW", defaultValue: 1 },
+                    { address: 9, name: "最小位置限制L", description: "舵机允许的最小角度位置低字节", type: "EEPROM", access: "RW", defaultValue: 58 },
+                    { address: 10, name: "最小位置限制H", description: "舵机允许的最小角度位置高字节", type: "EEPROM", access: "RW", defaultValue: 3 },
+                    { address: 11, name: "最大位置限制L", description: "舵机允许的最大角度位置低字节", type: "EEPROM", access: "RW", defaultValue: 185 },
+                    { address: 12, name: "最大位置限制H", description: "舵机允许的最大角度位置高字节", type: "EEPROM", access: "RW", defaultValue: 12 },
+                    { address: 13, name: "最高温度限制", description: "舵机工作温度上限(°C)", type: "EEPROM", access: "RW", defaultValue: 75 },
+                    { address: 14, name: "最高输入电压", description: "允许的最高工作电压(0.1V)", type: "EEPROM", access: "RW", defaultValue: 140 },
+                    { address: 15, name: "最低输入电压", description: "允许的最低工作电压(0.1V)", type: "EEPROM", access: "RW", defaultValue: 60 },
+                    { address: 16, name: "最大扭矩限制L", description: "舵机最大扭矩输出限制低字节", type: "EEPROM", access: "RW", defaultValue: 232 },
+                    { address: 17, name: "最大扭矩限制H", description: "舵机最大扭矩输出限制高字节", type: "EEPROM", access: "RW", defaultValue: 3 },
+                    { address: 18, name: "设置字节", description: "舵机行为和响应的综合配置", type: "EEPROM", access: "RW", defaultValue: 12 },
+                    { address: 19, name: "保护开关", description: "各种保护机制的开关控制", type: "EEPROM", access: "RW", defaultValue: 44 },
+
+                    // EPROM区域 - PID控制参数 (读写)
+                    { address: 21, name: "位置P增益", description: "位置比例控制器增益", type: "EEPROM", access: "RW", defaultValue: 32 },
+                    { address: 22, name: "位置D增益", description: "位置微分控制器增益", type: "EEPROM", access: "RW", defaultValue: 32 },
+                    { address: 23, name: "位置I增益", description: "位置积分控制器增益", type: "EEPROM", access: "RW", defaultValue: 0 },
+
+                    // EPROM区域 - 高级控制参数 (读写)
+                    { address: 24, name: "启动扭矩", description: "舵机启动时的初始扭矩输出", type: "EEPROM", access: "RW", defaultValue: 16 },
+                    { address: 25, name: "最大电流限制", description: "舵机工作电流上限", type: "EEPROM", access: "RW", defaultValue: 0 },
+                    { address: 26, name: "顺时针死区", description: "顺时针方向的位置死区", type: "EEPROM", access: "RW", defaultValue: 1 },
+                    { address: 27, name: "逆时针死区", description: "逆时针方向的位置死区", type: "EEPROM", access: "RW", defaultValue: 1 },
+                    { address: 28, name: "过载电流L", description: "触发过载保护的电流阈值低字节", type: "EEPROM", access: "RW", defaultValue: 244 },
+                    { address: 29, name: "过载电流H", description: "触发过载保护的电流阈值高字节", type: "EEPROM", access: "RW", defaultValue: 1 },
+                    { address: 30, name: "角度分辨率", description: "位置控制的分辨率设置", type: "EEPROM", access: "RW", defaultValue: 1 },
+                    { address: 31, name: "位置偏移值L", description: "位置校准的偏移量低字节", type: "EEPROM", access: "RW", defaultValue: 179 },
+                    { address: 32, name: "位置偏移值H", description: "位置校准的偏移量高字节", type: "EEPROM", access: "RW", defaultValue: 0 },
+                    { address: 33, name: "工作模式", description: "舵机工作模式选择", type: "EEPROM", access: "RW", defaultValue: 0 },
+                    { address: 34, name: "保护扭矩", description: "触发扭矩保护的扭矩值", type: "EEPROM", access: "RW", defaultValue: 20 },
+                    { address: 35, name: "过载保护时间L", description: "过载状态持续多久触发保护低字节", type: "EEPROM", access: "RW", defaultValue: 200 },
+                    { address: 36, name: "过载保护时间H", description: "过载状态持续多久触发保护高字节", type: "EEPROM", access: "RW", defaultValue: 0 },
+                    { address: 37, name: "速度P增益", description: "速度比例控制器增益", type: "EEPROM", access: "RW", defaultValue: 10 },
+                    { address: 38, name: "保留2", description: "保留字段", type: "EEPROM", access: "RW", defaultValue: 0 },
+                    { address: 39, name: "速度I增益", description: "速度积分控制器增益", type: "EEPROM", access: "RW", defaultValue: 200 },
+
+                    // EPROM区域 - 保护机制
+                    { address: 20, name: "LED警报条件", description: "LED指示灯的警报条件", type: "EEPROM", access: "RW", defaultValue: 47 },
+                    { address: 36, name: "过载扭矩", description: "过载检测的扭矩阈值", type: "EEPROM", access: "RW", defaultValue: 80 },
+                    { address: 38, name: "过流保护时间", description: "过流状态持续多久触发保护", type: "EEPROM", access: "RW", defaultValue: 200 },
+
+                    // SRAM区域 - 实时控制 (读写)
+                    { address: 40, name: "扭矩使能", description: "是否启用扭矩输出", type: "RAM", access: "RW", defaultValue: 0 },
+                    { address: 41, name: "目标加速度", description: "舵机运动的加速度设置", type: "RAM", access: "RW", defaultValue: 0 },
+                    { address: 42, name: "目标位置L", description: "舵机运动的目标位置低字节", type: "RAM", access: "RW", defaultValue: 0 },
+                    { address: 43, name: "目标位置H", description: "舵机运动的目标位置高字节", type: "RAM", access: "RW", defaultValue: 0 },
+                    { address: 44, name: "目标PWML", description: "直接控制PWM输出低字节", type: "RAM", access: "RW", defaultValue: 0 },
+                    { address: 45, name: "目标PWMH", description: "直接控制PWM输出高字节", type: "RAM", access: "RW", defaultValue: 0 },
+                    { address: 46, name: "目标速度L", description: "舵机运动的目标速度低字节", type: "RAM", access: "RW", defaultValue: 0 },
+                    { address: 47, name: "目标速度H", description: "舵机运动的目标速度高字节", type: "RAM", access: "RW", defaultValue: 0 },
+                    { address: 48, name: "扭矩限制L", description: "运行时的扭矩限制低字节", type: "RAM", access: "RW", defaultValue: 0 },
+                    { address: 49, name: "扭矩限制H", description: "运行时的扭矩限制高字节", type: "RAM", access: "RW", defaultValue: 0 },
+
+                    // SRAM区域 - 状态反馈 (只读)
+                    { address: 55, name: "锁定", description: "EEPROM写保护状态", type: "RAM", access: "RW", defaultValue: 1 },
+                    { address: 56, name: "当前位置L", description: "舵机实时位置反馈低字节", type: "RAM", access: "RO", defaultValue: 0 },
+                    { address: 57, name: "当前位置H", description: "舵机实时位置反馈高字节", type: "RAM", access: "RO", defaultValue: 0 },
+                    { address: 58, name: "当前速度L", description: "舵机实时速度反馈低字节", type: "RAM", access: "RO", defaultValue: 0 },
+                    { address: 59, name: "当前速度H", description: "舵机实时速度反馈高字节", type: "RAM", access: "RO", defaultValue: 0 },
+                    { address: 60, name: "当前PWML", description: "舵机实时PWM输出低字节", type: "RAM", access: "RO", defaultValue: 0 },
+                    { address: 61, name: "当前PWMH", description: "舵机实时PWM输出高字节", type: "RAM", access: "RO", defaultValue: 0 },
+                    { address: 62, name: "当前输入电压", description: "实时工作电压(0.1V)", type: "RAM", access: "RO", defaultValue: 0 },
+                    { address: 63, name: "当前温度", description: "舵机实时温度(°C)", type: "RAM", access: "RO", defaultValue: 0 },
+                    { address: 64, name: "同步写入标志", description: "同步写入操作状态", type: "RAM", access: "RO", defaultValue: 0 },
+                    { address: 65, name: "硬件错误状态", description: "详细的硬件错误信息", type: "RAM", access: "RO", defaultValue: 0 },
+                    { address: 66, name: "运动状态", description: "舵机运动状态指示", type: "RAM", access: "RO", defaultValue: 0 },
+                    { address: 67, name: "当前电流L", description: "舵机实时工作电流低字节", type: "RAM", access: "RO", defaultValue: 0 },
+                    { address: 68, name: "当前电流H", description: "舵机实时工作电流高字节", type: "RAM", access: "RO", defaultValue: 0 },
+
+                    // 默认参数区域 (系统级)
+                    { address: 80, name: "运动阈值", description: "运动检测的阈值设置", type: "RAM", access: "RW", defaultValue: 1 },
+                    { address: 81, name: "DTs(ms)", description: "时间采样间隔(ms)", type: "RAM", access: "RW", defaultValue: 20 },
+                    { address: 82, name: "Vk(ms)", description: "速度采样时间(ms)", type: "RAM", access: "RW", defaultValue: 50 },
+                    { address: 83, name: "Vmin", description: "最小速度限制", type: "RAM", access: "RW", defaultValue: 1 },
+                    { address: 84, name: "Vmax", description: "最大速度限制", type: "RAM", access: "RW", defaultValue: 68 },
+                    { address: 85, name: "Amax", description: "最大加速度限制", type: "RAM", access: "RW", defaultValue: 254 },
+                    { address: 86, name: "KAcc", description: "加速度系数", type: "RAM", access: "RW", defaultValue: 0 }
+                ];
+
+                this.memoryMap = memoryMap;
+                this.renderMemoryTable();
+            }
+
+            renderMemoryTable() {
+                const tableBody = document.getElementById('memoryTableBody');
+                if (!tableBody) return;
+
+                tableBody.innerHTML = '';
+
+                this.memoryMap.forEach((item, index) => {
+                    const row = document.createElement('div');
+                    row.className = `memory-row ${item.type.toLowerCase()}`;
+                    row.dataset.address = item.address;
+                    row.dataset.type = item.type;
+                    row.dataset.name = item.name.toLowerCase();
+                    row.dataset.description = item.description.toLowerCase();
+
+                    row.innerHTML = `
+                        <div class="memory-address">${item.address.toString(16).toUpperCase()}</div>
+                        <div class="memory-name">${item.name}</div>
+                        <div class="memory-description">${item.description}</div>
+                        <div class="memory-type ${item.type.toLowerCase()}">${item.type}</div>
+                        <div class="memory-access ${item.access.toLowerCase()}">${item.access}</div>
+                        <div class="memory-value" id="value-${item.address}">-</div>
+                        <div class="memory-actions">
+                            <button class="mini-button read" onclick="readMemoryAddress(${item.address})">读</button>
+                            ${item.access === 'RW' ? `<button class="mini-button write" onclick="writeMemoryAddress(${item.address})">写</button>` : ''}
+                        </div>
+                    `;
+
+                    tableBody.appendChild(row);
+                });
+            }
+
+            handleConnection(message) {
+                this.addLog(`[系统] 服务器状态: ${message.status}`,
+                           message.status === 'connected' ? 'success' : 'info');
+            }
+
+            handleScanResult(message) {
+                this.addLog(`[扫描] 完成: 发现 ${message.count} 个设备`, 'success');
+                this.displayServoList(message.servos);
+
+                // 隐藏扫描状态
+                const scanStatus = document.getElementById('scanStatus');
+                if (scanStatus) {
+                    scanStatus.style.display = 'none';
+                }
+
+                // 填充标定选择器
+                this.populateCalibrationSelectors(message.servos);
+            }
+
+            displayServoList(servos) {
+                const listContainer = document.getElementById('servoList');
+                if (!listContainer) return;
+
+                listContainer.innerHTML = '';
+
+                if (servos.length === 0) {
+                    listContainer.innerHTML = `
+                        <div class="empty-state">
+                            <div class="empty-icon">🤖</div>
+                            <div class="empty-title">未发现设备</div>
+                            <div class="empty-description">请检查设备连接和供电</div>
+                        </div>
+                    `;
+                    return;
+                }
+
+                servos.forEach(servo => {
+                    const servoElement = document.createElement('div');
+                    servoElement.className = 'servo-item';
+                    servoElement.onclick = () => this.selectServo(servo.id);
+
+                    servoElement.innerHTML = `
+                        <div class="servo-id">舵机 #${servo.id}</div>
+                        <div class="servo-info">
+                            <span>型号: ${servo.model_number || 'FTServo'}</span>
+                            <div class="servo-status">
+                                <div class="status-dot"></div>
+                                <span>在线</span>
+                            </div>
+                        </div>
+                        <div class="servo-details">
+                            <div class="servo-detail-item">
+                                <span>🔗</span>
+                                <span>ID: ${servo.id}</span>
+                            </div>
+                            <div class="servo-detail-item">
+                                <span>📋</span>
+                                <span>${servo.vendor || 'FEETECH'}</span>
+                            </div>
+                        </div>
+                    `;
+
+                    listContainer.appendChild(servoElement);
+                });
+            }
+
+            selectServo(servoId) {
+                this.selectedServoId = servoId;
+
+                // 更新UI选中状态
+                document.querySelectorAll('.servo-item').forEach(item => {
+                    item.classList.remove('selected');
+                });
+                event.currentTarget.classList.add('selected');
+
+                // 显示控制面板
+                this.showControlPanel();
+
+                // 获取舵机状态
+                this.getServoStatus(servoId);
+
+                // 更新标定界面中的舵机显示
+                if (typeof updateCalibrationServoDisplay === 'function') {
+                    updateCalibrationServoDisplay();
+                }
+
+                this.addLog(`[控制] 已选择舵机 ${servoId}`, 'success');
+            }
+
+            showControlPanel() {
+                const controlPanel = document.getElementById('controlPanel');
+                if (!controlPanel) return;
+
+                controlPanel.innerHTML = `
+                    <div class="control-group">
+                        <label>控制模式</label>
+                        <div class="control-group">
+                            <button class="button ${this.controlMode === 'manual' ? '' : 'warning'}" onclick="setControlMode('manual')" style="margin-bottom: 8px;">
+                                ${this.controlMode === 'manual' ? '✅' : ''} 🎯 手动模式
+                            </button>
+                            <button class="button ${this.controlMode === 'realtime' ? '' : 'success'}" onclick="setControlMode('realtime')">
+                                ${this.controlMode === 'realtime' ? '✅' : ''} ⚡ 实时模式
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="control-group">
+                        <label>位置控制 (0-4095)</label>
+                        <div class="slider-container">
+                            <input type="range" id="positionSlider" class="slider" min="0" max="4095" value="2048" oninput="updatePositionFromSlider(this.value)">
+                            <span class="slider-value" id="positionValue">2048</span>
+                        </div>
+                        <div style="display: grid; grid-template-columns: 1fr 100px; gap: 8px;">
+                            <input type="number" id="positionInput" min="0" max="4095" value="2048" onchange="updatePositionFromInput(this.value)">
+                            <button class="button" onclick="moveServo()">移动</button>
+                        </div>
+                    </div>
+
+                    <div class="control-group">
+                        <label>速度控制 (0-2047)</label>
+                        <div class="slider-container">
+                            <input type="range" id="speedSlider" class="slider" min="0" max="2047" value="100" oninput="updateSpeedFromSlider(this.value)">
+                            <span class="slider-value" id="speedValue">100</span>
+                        </div>
+                    </div>
+
+                    <div class="control-group">
+                        <label>加速度控制 (0-255)</label>
+                        <div class="slider-container">
+                            <input type="range" id="accelSlider" class="slider" min="0" max="255" value="50" oninput="updateAccelFromSlider(this.value)">
+                            <span class="slider-value" id="accelValue">50</span>
+                        </div>
+                    </div>
+
+                    <div class="control-group">
+                        <label>快速预设</label>
+                        <div class="preset-grid">
+                            <button class="preset-button" onclick="setPosition(0)">0°</button>
+                            <button class="preset-button" onclick="setPosition(512)">45°</button>
+                            <button class="preset-button" onclick="setPosition(1024)">90°</button>
+                            <button class="preset-button" onclick="setPosition(1536)">135°</button>
+                            <button class="preset-button" onclick="setPosition(2048)">180°</button>
+                            <button class="preset-button" onclick="setPosition(2560)">225°</button>
+                            <button class="preset-button" onclick="setPosition(3072)">270°</button>
+                            <button class="preset-button" onclick="setPosition(3584)">315°</button>
+                        </div>
+                    </div>
+
+                    <div class="quick-actions">
+                        <button class="button" onclick="refreshStatus()">
+                            <span>🔄</span> 刷新状态
+                        </button>
+                        <button class="button danger" onclick="stopServo()">
+                            <span>⏹️</span> 停止舵机
+                        </button>
+                    </div>
+                `;
+
+                // 初始化实时控制
+                this.initRealtimeControl();
+            }
+
+            updateServoStatus(status) {
+                if (!status || status.id !== this.selectedServoId) return;
+
+                const statusPanel = document.getElementById('statusPanel');
+                if (!statusPanel) return;
+
+                statusPanel.innerHTML = `
+                    <div class="status-grid">
+                        <div class="status-item">
+                            <span class="status-label">连接状态:</span>
+                            <span class="status-value">${status.connected ? '✅ 已连接' : '❌ 断开'}</span>
+                        </div>
+                        <div class="status-item">
+                            <span class="status-label">当前ID:</span>
+                            <span class="status-value">#${status.id}</span>
+                        </div>
+                        <div class="status-item">
+                            <span class="status-label">位置:</span>
+                            <span class="status-value">${status.position || 'N/A'}</span>
+                        </div>
+                        <div class="status-item">
+                            <span class="status-label">速度:</span>
+                            <span class="status-value">${status.speed || 'N/A'}</span>
+                        </div>
+                        <div class="status-item">
+                            <span class="status-label">温度:</span>
+                            <span class="status-value">${status.temperature ? status.temperature + '°C' : 'N/A'}</span>
+                        </div>
+                        <div class="status-item">
+                            <span class="status-label">电压:</span>
+                            <span class="status-value">${status.voltage ? status.voltage.toFixed(1) + 'V' : 'N/A'}</span>
+                        </div>
+                        <div class="status-item">
+                            <span class="status-label">电流:</span>
+                            <span class="status-value">${status.current ? status.current + 'mA' : 'N/A'}</span>
+                        </div>
+                        <div class="status-item">
+                            <span class="status-label">更新时间:</span>
+                            <span class="status-value">${new Date(status.timestamp * 1000).toLocaleTimeString()}</span>
+                        </div>
+                    </div>
+                `;
+            }
+
+            handleServoStatus(message) {
+                this.updateServoStatus(message.status);
+            }
+
+            handleMoveResult(message) {
+                if (message.success) {
+                    this.addLog(`[控制] 设备 ${message.servo_id} 移动成功`, 'success');
+                } else {
+                    this.addLog(`[控制] 设备 ${message.servo_id} 移动失败: ${message.error}`, 'error');
+                }
+            }
+
+            handleMemoryRead(message) {
+                const valueElement = document.getElementById(`value-${message.address}`);
+                if (valueElement && message.data) {
+                    // 将字节数组转换为数值
+                    let decimalValue = 0;
+                    let displayValue = '';
+
+                    if (Array.isArray(message.data) && message.data.length > 0) {
+                        // 多字节数据：转换为16位数值
+                        if (message.data.length === 2) {
+                            // 小端序：低字节在前
+                            decimalValue = message.data[0] | (message.data[1] << 8);
+                            displayValue = decimalValue.toString();
+                        } else {
+                            // 单字节数据
+                            decimalValue = message.data[0];
+                            displayValue = decimalValue.toString();
+                        }
+                    } else if (typeof message.data === 'string') {
+                        // 如果服务器直接返回了十六进制字符串
+                        decimalValue = parseInt(message.data, 16);
+                        displayValue = decimalValue.toString();
+                    } else {
+                        displayValue = 'N/A';
+                    }
+
+                    // 根据地址类型进行特殊处理
+                    const memoryItem = this.memoryMap.find(item => item.address === message.address);
+                    if (memoryItem) {
+                        // 电压值特殊处理：0.1V为单位
+                        if (memoryItem.name.includes('电压') && decimalValue > 0) {
+                            displayValue = (decimalValue * 0.1).toFixed(1) + 'V';
+                        }
+                        // 温度值特殊处理
+                        else if (memoryItem.name.includes('温度')) {
+                            displayValue = decimalValue + '°C';
+                        }
+                        // 时间值特殊处理
+                        else if (memoryItem.name.includes('ms') || memoryItem.name.includes('时间')) {
+                            displayValue = decimalValue + 'ms';
+                        }
+                        // 位置值特殊处理（通常需要特殊单位转换）
+                        else if (memoryItem.name.includes('位置') && decimalValue > 0) {
+                            displayValue = decimalValue + ' (0-4095)';
+                        }
+                    }
+
+                    valueElement.textContent = displayValue;
+                    this.memoryData.set(message.address, {
+                        raw: message.data,
+                        decimal: decimalValue,
+                        display: displayValue
+                    });
+
+                    this.addLog(`[内存] 地址 ${message.address.toString(16).toUpperCase()}: 读取值 = ${displayValue} (十进制: ${decimalValue})`, 'success');
+                } else {
+                    this.addLog(`[内存] 地址 ${message.address.toString(16).toUpperCase()}: 读取失败`, 'error');
+                }
+            }
+
+            handleTemperatureLimit(message) {
+                if (message.success) {
+                    this.addLog(`[温度] 温度限制: ${message.limit}°C`, 'success');
+
+                    // 更新内存表格中的值
+                    const valueElement = document.getElementById('value-13');
+                    if (valueElement) {
+                        valueElement.textContent = message.limit;
+                        this.memoryData.set(13, message.limit);
+                    }
+                } else {
+                    this.addLog(`[温度] 读取温度限制失败: ${message.error}`, 'error');
+                }
+            }
+
+            handleServoIdSetResult(message) {
+                if (message.success) {
+                    this.addLog(`[ID配置] 舵机ID设置成功: ${message.old_id} -> ${message.new_id}`, 'success');
+                    // 自动重新扫描以更新设备列表
+                    setTimeout(() => {
+                        this.sendMessage({
+                            type: 'scan_servos',
+                            start_id: 1,
+                            end_id: 20
+                        });
+                    }, 1000);
+                } else {
+                    this.addLog(`[ID配置] 舵机ID设置失败: ${message.error}`, 'error');
+                }
+            }
+
+            updateConnectionStatus(connected) {
+                const indicator = document.getElementById('statusIndicator');
+                const status = document.getElementById('connectionStatus');
+
+                if (connected) {
+                    indicator.classList.add('connected');
+                    status.textContent = '已连接到服务器';
+                } else {
+                    indicator.classList.remove('connected');
+                    status.textContent = '连接断开';
+                }
+            }
+
+            populateCalibrationSelectors(servos) {
+                const selectors = [
+                    'calibrationServoSelect',
+                    'tempCalibrationServoSelect',
+                    'centerCalibrationServoSelect'
+                ];
+
+                selectors.forEach(selectorId => {
+                    const select = document.getElementById(selectorId);
+                    if (select) {
+                        const currentValue = select.value;
+                        select.innerHTML = '<option value="">选择舵机...</option>';
+
+                        servos.forEach(servo => {
+                            const option = document.createElement('option');
+                            option.value = servo.id;
+                            option.textContent = `舵机 #${servo.id} - ${servo.model_number || 'FTServo'}`;
+                            if (currentValue == servo.id) {
+                                option.selected = true;
+                            }
+                            select.appendChild(option);
+                        });
+                    }
+                });
+            }
+
+            // 实时控制方法
+            initRealtimeControl() {
+                this.realtimeEnabled = false;
+            }
+
+            setControlMode(mode) {
+                this.controlMode = mode;
+                this.realtimeEnabled = (mode === 'realtime');
+
+                if (this.realtimeEnabled) {
+                    this.addLog('[控制] 实时模式已启用 - 拖动滑块即可控制', 'success');
+                } else {
+                    this.addLog('[控制] 手动模式已启用 - 点击按钮执行移动', 'info');
+                }
+            }
+
+            moveServoRealtime(position, speed, acceleration) {
+                const now = Date.now();
+                if (now - this.lastMoveTime < this.moveDebounceDelay) {
+                    return;
+                }
+                this.lastMoveTime = now;
+
+                if (!this.selectedServoId) {
+                    return;
+                }
+
+                this.sendMessage({
+                    type: 'move_servo',
+                    servo_id: this.selectedServoId,
+                    position: parseInt(position),
+                    speed: parseInt(speed),
+                    acceleration: parseInt(acceleration)
+                });
+            }
+
+            sendMessage(message) {
+                if (this.ws && this.ws.readyState === WebSocket.OPEN) {
+                    this.ws.send(JSON.stringify(message));
+                    return true;
+                }
+                this.addLog('[WebSocket] 无法发送消息: 连接断开', 'error');
+                return false;
+            }
+
+            addLog(message, type = 'info') {
+                const logContent = document.getElementById('logContent');
+                if (!logContent) return;
+
+                const timestamp = new Date().toLocaleTimeString();
+                const logEntry = document.createElement('div');
+                logEntry.className = `log-entry ${type}`;
+                logEntry.textContent = `[${timestamp}] ${message}`;
+
+                logContent.appendChild(logEntry);
+                logContent.scrollTop = logContent.scrollHeight;
+
+                // 限制日志条数
+                const entries = logContent.children;
+                if (entries.length > 100) {
+                    logContent.removeChild(entries[0]);
+                }
+            }
+        }
+
+        // 全局控制器实例
+        let controller;
+
+        // 页面加载完成后初始化
+        document.addEventListener('DOMContentLoaded', () => {
+            controller = new SeeedRoboCoreController();
+        });
+
+        // Tab切换功能
+        function switchTab(tabName) {
+            // 更新tab按钮状态
+            document.querySelectorAll('.tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            event.target.classList.add('active');
+
+            // 更新tab内容显示
+            document.querySelectorAll('.tab-content').forEach(content => {
+                content.classList.remove('active');
+            });
+            document.getElementById(`${tabName}-tab`).classList.add('active');
+        }
+
+        // 全局功能函数
+        function scanServos() {
+            // 显示扫描状态
+            const scanStatus = document.getElementById('scanStatus');
+            if (scanStatus) {
+                scanStatus.style.display = 'flex';
+            }
+
+            controller.sendMessage({
+                type: 'scan_servos',
+                start_id: 1,
+                end_id: 20
+            });
+
+            controller.addLog('[扫描] 开始重新扫描设备...', 'info');
+        }
+
+        // 实时控制函数
+        function setControlMode(mode) {
+            controller.setControlMode(mode);
+        }
+
+        function updatePositionFromSlider(value) {
+            document.getElementById('positionValue').textContent = value;
+            document.getElementById('positionInput').value = value;
+
+            if (controller.realtimeEnabled && controller.selectedServoId) {
+                const speed = document.getElementById('speedSlider').value;
+                const acceleration = document.getElementById('accelSlider').value;
+                controller.moveServoRealtime(value, speed, acceleration);
+            }
+        }
+
+        function updatePositionFromInput(value) {
+            document.getElementById('positionSlider').value = value;
+            document.getElementById('positionValue').textContent = value;
+        }
+
+        function updateSpeedFromSlider(value) {
+            document.getElementById('speedValue').textContent = value;
+            document.getElementById('speedInput').value = value;
+        }
+
+        function updateSpeedFromInput(value) {
+            document.getElementById('speedSlider').value = value;
+            document.getElementById('speedValue').textContent = value;
+        }
+
+        function updateAccelFromSlider(value) {
+            document.getElementById('accelValue').textContent = value;
+            document.getElementById('accelInput').value = value;
+        }
+
+        function updateAccelFromInput(value) {
+            document.getElementById('accelSlider').value = value;
+            document.getElementById('accelValue').textContent = value;
+        }
+
+        function setPosition(value) {
+            document.getElementById('positionSlider').value = value;
+            document.getElementById('positionInput').value = value;
+            document.getElementById('positionValue').textContent = value;
+
+            if (controller.realtimeEnabled && controller.selectedServoId) {
+                const speed = document.getElementById('speedSlider').value;
+                const acceleration = document.getElementById('accelSlider').value;
+                controller.moveServoRealtime(value, speed, acceleration);
+            }
+        }
+
+        function moveServo() {
+            if (!controller.selectedServoId) {
+                alert('请先选择舵机');
+                return;
+            }
+
+            const position = parseInt(document.getElementById('positionInput').value);
+            const speed = parseInt(document.getElementById('speedInput').value);
+            const acceleration = parseInt(document.getElementById('accelInput').value);
+
+            controller.sendMessage({
+                type: 'move_servo',
+                servo_id: controller.selectedServoId,
+                position: position,
+                speed: speed,
+                acceleration: acceleration
+            });
+        }
+
+        function stopServo() {
+            if (!controller.selectedServoId) {
+                alert('请先选择舵机');
+                return;
+            }
+
+            controller.sendMessage({
+                type: 'stop_servo',
+                servo_id: controller.selectedServoId
+            });
+        }
+
+        function refreshStatus() {
+            if (!controller.selectedServoId) {
+                alert('请先选择舵机');
+                return;
+            }
+            controller.sendMessage({
+                type: 'get_servo_status',
+                servo_id: controller.selectedServoId
+            });
+        }
+
+        function clearLog() {
+            const logContent = document.getElementById('logContent');
+            if (logContent) {
+                logContent.innerHTML = '<div class="log-entry info">[系统] 日志已清空</div>';
+            }
+        }
+
+        // 标定功能
+        function startCalibration() {
+            switchTab('calibration');
+        }
+
+        function selectCalibrationType(type) {
+            // 移除所有选中状态
+            document.querySelectorAll('.calibration-card').forEach(card => {
+                card.classList.remove('active');
+            });
+
+            // 激活选中的类型
+            const selectedCard = document.getElementById(`cal-${type}`);
+            if (selectedCard) {
+                selectedCard.classList.add('active');
+            }
+
+            // 显示对应的标定内容
+            showCalibrationContent(type);
+        }
+
+        function showCalibrationContent(type) {
+            const contentArea = document.getElementById('calibrationContent');
+            let contentHTML = '';
+
+            switch(type) {
+                case 'id':
+                    contentHTML = `
+                        <div class="control-group">
+                            <label>当前配置舵机: <span id="currentIdCalibrationServo" style="color: var(--seeed-green); font-weight: bold;">未选择</span></label>
+                            <div style="font-size: 0.75rem; color: #718096; margin-top: 4px;">
+                                请先从左侧设备管理中选择要配置的舵机
+                            </div>
+                        </div>
+
+                        <div class="control-group">
+                            <label>新舵机ID (1-253)</label>
+                            <input type="number" id="newServoId" min="1" max="253" value="1">
+                        </div>
+
+                        <div class="quick-actions">
+                            <button class="button" onclick="scanServos()">
+                                <span>🔍</span> 重新扫描设备
+                            </button>
+                            <button class="button success" onclick="setServoId()">
+                                <span>💾</span> 设置ID
+                            </button>
+                        </div>
+                    `;
+                    break;
+
+                case 'temperature':
+                    contentHTML = `
+                        <div class="control-group">
+                            <label>当前配置舵机: <span id="currentTempCalibrationServo" style="color: var(--seeed-green); font-weight: bold;">未选择</span></label>
+                            <div style="font-size: 0.75rem; color: #718096; margin-top: 4px;">
+                                请先从左侧设备管理中选择要配置的舵机
+                            </div>
+                        </div>
+
+                        <div class="control-group">
+                            <label>温度限制 (°C)</label>
+                            <div class="slider-container">
+                                <input type="range" id="tempLimitSlider" class="slider" min="50" max="100" value="75" oninput="updateTempLimitDisplay(this.value)">
+                                <span class="slider-value" id="tempLimitDisplay">75°C</span>
+                            </div>
+                        </div>
+
+                        <div class="quick-actions">
+                            <button class="button" onclick="scanServos()">
+                                <span>🔍</span> 重新扫描设备
+                            </button>
+                            <button class="button" onclick="readTemperatureLimit()">
+                                <span>📖</span> 读取当前值
+                            </button>
+                            <button class="button success" onclick="setTemperatureLimit()">
+                                <span>💾</span> 保存温度限制
+                            </button>
+                        </div>
+                    `;
+                    break;
+
+                case 'center':
+                    contentHTML = `
+                        <div class="manual-mode">
+                            <div class="manual-mode-header">
+                                <span>⚠️</span>
+                                <span>手动校准模式</span>
+                            </div>
+                            <p style="font-size: 0.8rem; color: #92400E; margin-bottom: 10px;">
+                                在此模式下，舵机扭矩将被禁用，您可以手动转动舵机到正确位置。
+                            </p>
+                            <button class="torque-button" id="torqueDisableBtn" onclick="toggleTorqueDisable()">
+                                <span id="torqueBtnText">🔓 禁用舵机扭矩</span>
+                            </button>
+                        </div>
+
+                        <div class="control-group">
+                            <label>当前校准舵机: <span id="currentCalibrationServo" style="color: var(--seeed-green); font-weight: bold;">未选择</span></label>
+                            <div style="font-size: 0.75rem; color: #718096; margin-top: 4px;">
+                                请先从左侧设备管理中选择要校准的舵机
+                            </div>
+                        </div>
+
+                        <div class="control-group">
+                            <label>校准指引:</label>
+                            <div style="background: #FEF3C7; border: 1px solid #FCD34D; border-radius: 6px; padding: 10px; font-size: 0.8rem; color: #92400E;">
+                                1. 从左侧设备管理选择舵机<br>
+                                2. 点击"禁用舵机扭矩"按钮<br>
+                                3. 手动转动舵机使舵盘完全朝上<br>
+                                4. 点击"保存中位位置"
+                            </div>
+                        </div>
+
+                        <div class="quick-actions">
+                            <button class="button" onclick="scanServos()">
+                                <span>🔍</span> 重新扫描设备
+                            </button>
+                            <button class="button" onclick="saveCenterPositionManual()">
+                                <span>💾</span> 保存中位位置
+                            </button>
+                            <button class="button" onclick="testCenterPosition()">
+                                <span>🎯</span> 测试中位
+                            </button>
+                        </div>
+                    `;
+                    break;
+            }
+
+            contentArea.innerHTML = contentHTML;
+
+            // 更新当前选择的舵机信息
+            updateCalibrationServoDisplay();
+        }
+
+        // 更新标定界面中显示的当前舵机
+        function updateCalibrationServoDisplay() {
+            const servoDisplays = [
+                'currentCalibrationServo',  // 中位校准
+                'currentIdCalibrationServo', // ID配置
+                'currentTempCalibrationServo' // 温度限制
+            ];
+
+            servoDisplays.forEach(displayId => {
+                const servoDisplay = document.getElementById(displayId);
+                if (servoDisplay) {
+                    if (controller.selectedServoId) {
+                        servoDisplay.textContent = `舵机 #${controller.selectedServoId}`;
+                        servoDisplay.style.color = 'var(--seeed-green)';
+                        servoDisplay.style.fontWeight = 'bold';
+                    } else {
+                        servoDisplay.textContent = '未选择';
+                        servoDisplay.style.color = '#718096';
+                        servoDisplay.style.fontWeight = 'normal';
+                    }
+                }
+            });
+        }
+
+        // 扭矩控制 - 直接操作内存地址40
+        function toggleTorqueDisable() {
+            const btn = document.getElementById('torqueDisableBtn');
+            const btnText = document.getElementById('torqueBtnText');
+
+            // 优先使用已选择的舵机ID
+            if (controller.selectedServoId) {
+                // 使用设备管理中已选择的舵机
+            } else {
+                const select = document.getElementById('centerCalibrationServoSelect');
+                if (select && select.value) {
+                    controller.selectedServoId = parseInt(select.value);
+                } else {
+                    alert('请先从设备管理中选择舵机');
+                    return;
+                }
+            }
+
+            const isDisabled = btn.classList.contains('active');
+
+            if (isDisabled) {
+                // 启用扭矩 - 写入1到地址40
+                controller.sendMessage({
+                    type: 'write_memory',
+                    servo_id: controller.selectedServoId,
+                    address: 40,
+                    data: [1]  // 启用扭矩
+                });
+
+                btn.classList.remove('active');
+                btnText.textContent = '🔓 禁用舵机扭矩';
+
+                controller.addLog(`[中位校准] 已启用舵机 #${controller.selectedServoId} 扭矩`, 'info');
+            } else {
+                // 禁用扭矩 - 写入0到地址40
+                controller.sendMessage({
+                    type: 'write_memory',
+                    servo_id: controller.selectedServoId,
+                    address: 40,
+                    data: [0]  // 禁用扭矩
+                });
+
+                btn.classList.add('active');
+                btnText.textContent = '🔒 启用舵机扭矩';
+
+                controller.addLog(`[中位校准] 已禁用舵机 #${controller.selectedServoId} 扭矩，可以手动调整位置`, 'warning');
+            }
+        }
+
+        function saveCenterPositionManual() {
+            if (!controller.selectedServoId) {
+                alert('请先选择要校准的舵机');
+                return;
+            }
+
+            // 获取当前位置并保存
+            controller.sendMessage({
+                type: 'get_servo_status',
+                servo_id: controller.selectedServoId
+            });
+
+            controller.calibrationData.centerPosition = parseInt(document.getElementById('positionInput')?.value || 2048);
+
+            controller.addLog(`[中位校准] 保存中位位置: ${controller.calibrationData.centerPosition}`, 'success');
+
+            // 重新启用扭矩
+            const btn = document.getElementById('torqueDisableBtn');
+            if (btn.classList.contains('active')) {
+                toggleTorqueDisable();
+            }
+        }
+
+        function testCenterPosition() {
+            if (!controller.selectedServoId) {
+                alert('请先选择要测试的舵机');
+                return;
+            }
+
+            const position = controller.calibrationData.centerPosition || 2048;
+
+            controller.sendMessage({
+                type: 'move_servo',
+                servo_id: controller.selectedServoId,
+                position: position,
+                speed: 100,
+                acceleration: 50
+            });
+
+            controller.addLog(`[中位校准] 测试移动到中位: ${position}`, 'info');
+        }
+
+        function setServoId() {
+            if (!controller.selectedServoId) {
+                alert('请先从设备管理中选择要配置的舵机');
+                return;
+            }
+
+            const newId = document.getElementById('newServoId').value;
+            if (!newId) {
+                alert('请输入新ID');
+                return;
+            }
+
+            const oldId = controller.selectedServoId;
+            const newIdNum = parseInt(newId);
+
+            if (newIdNum < 1 || newIdNum > 253) {
+                alert('新ID必须在1-253范围内');
+                return;
+            }
+
+            controller.sendMessage({
+                type: 'set_servo_id',
+                old_id: oldId,
+                new_id: newIdNum
+            });
+
+            controller.addLog(`[ID配置] 设置舵机ID: ${oldId} -> ${newIdNum}`, 'info');
+        }
+
+        function setTemperatureLimit() {
+            if (!controller.selectedServoId) {
+                alert('请先从设备管理中选择要配置的舵机');
+                return;
+            }
+
+            const tempLimit = parseInt(document.getElementById('tempLimitSlider').value);
+
+            // 直接写入内存地址13 (温度限制)
+            controller.sendMessage({
+                type: 'write_memory',
+                servo_id: controller.selectedServoId,
+                address: 13,
+                data: [tempLimit]
+            });
+
+            controller.addLog(`[温度限制] 设置温度限制: ${tempLimit}°C`, 'info');
+        }
+
+        function readTemperatureLimit() {
+            if (!controller.selectedServoId) {
+                alert('请先从设备管理中选择要配置的舵机');
+                return;
+            }
+
+            // 直接读取内存地址13 (温度限制)
+            controller.sendMessage({
+                type: 'read_memory',
+                servo_id: controller.selectedServoId,
+                address: 13,
+                length: 1
+            });
+
+            controller.addLog(`[温度限制] 读取温度限制`, 'info');
+        }
+
+        function updateTempLimitDisplay(value) {
+            document.getElementById('tempLimitDisplay').textContent = `${value}°C`;
+        }
+
+        // 内存表格功能
+        function filterMemoryTable(searchText) {
+            const rows = document.querySelectorAll('.memory-row');
+            const lowerSearch = searchText.toLowerCase();
+
+            rows.forEach(row => {
+                const name = row.dataset.name || '';
+                const description = row.dataset.description || '';
+                const address = row.dataset.address || '';
+
+                if (name.includes(lowerSearch) ||
+                    description.includes(lowerSearch) ||
+                    address.includes(lowerSearch)) {
+                    row.style.display = 'grid';
+                } else {
+                    row.style.display = 'none';
+                }
+            });
+        }
+
+        function filterMemoryType(type) {
+            const rows = document.querySelectorAll('.memory-row');
+            const buttons = document.querySelectorAll('.filter-button');
+
+            // 更新按钮状态
+            buttons.forEach(btn => {
+                btn.classList.remove('active');
+            });
+            event.target.classList.add('active');
+
+            // 过滤显示
+            rows.forEach(row => {
+                if (type === 'all') {
+                    row.style.display = 'grid';
+                } else {
+                    if (row.dataset.type.toLowerCase() === type) {
+                        row.style.display = 'grid';
+                    } else {
+                        row.style.display = 'none';
+                    }
+                }
+            });
+        }
+
+        function readMemoryAddress(address) {
+            if (!controller.selectedServoId) {
+                alert('请先选择舵机');
+                return;
+            }
+
+            // 根据地址判断读取长度
+            const memoryItem = controller.memoryMap.find(item => item.address === address);
+            let readLength = 1; // 默认读取1字节
+
+            // 对于16位值的地址，读取2字节
+            const doubleByteAddresses = [9, 10, 11, 12, 16, 17, 28, 29, 31, 32, 35, 36,
+                                       42, 43, 44, 45, 46, 47, 48, 49, 56, 57, 58, 59, 60, 61, 67, 68];
+
+            if (doubleByteAddresses.includes(address)) {
+                readLength = 2;
+            }
+
+            controller.sendMessage({
+                type: 'read_memory',
+                servo_id: controller.selectedServoId,
+                address: address,
+                length: readLength
+            });
+
+            controller.addLog(`[内存] 读取地址: ${address.toString(16).toUpperCase()} (${readLength}字节)`, 'info');
+        }
+
+        function writeMemoryAddress(address) {
+            if (!controller.selectedServoId) {
+                alert('请先选择舵机');
+                return;
+            }
+
+            const memoryItem = controller.memoryMap.find(item => item.address === address);
+            let promptText = `写入地址 ${address.toString(16).toUpperCase()}`;
+            let inputType = 'decimal';
+
+            if (memoryItem) {
+                promptText += ` - ${memoryItem.name}`;
+
+                // 根据参数类型给出更具体的提示
+                if (memoryItem.name.includes('电压')) {
+                    promptText += '\n请输入电压值 (单位: 0.1V, 例如: 120 表示12.0V)';
+                } else if (memoryItem.name.includes('温度')) {
+                    promptText += '\n请输入温度值 (单位: °C, 范围: 0-100)';
+                } else if (memoryItem.name.includes('位置')) {
+                    promptText += '\n请输入位置值 (范围: 0-4095)';
+                } else if (memoryItem.name.includes('时间') || memoryItem.name.includes('ms')) {
+                    promptText += '\n请输入时间值 (单位: ms)';
+                } else {
+                    promptText += '\n请输入十进制数值';
+                }
+            }
+
+            const value = prompt(promptText);
+            if (!value) return;
+
+            // 验证输入
+            let numericValue = parseInt(value);
+            if (isNaN(numericValue)) {
+                alert('请输入有效的数值');
+                return;
+            }
+
+            // 根据地址类型进行数值转换
+            let writeData = numericValue;
+            let displayValue = numericValue.toString();
+
+            if (memoryItem) {
+                // 电压值：需要转换为0.1V单位
+                if (memoryItem.name.includes('电压')) {
+                    writeData = Math.round(numericValue / 0.1);
+                    displayValue = numericValue.toFixed(1) + 'V';
+                }
+                // 温度值：直接使用
+                else if (memoryItem.name.includes('温度')) {
+                    if (numericValue < 0 || numericValue > 100) {
+                        alert('温度值必须在0-100°C范围内');
+                        return;
+                    }
+                    displayValue = numericValue + '°C';
+                }
+                // 位置值：检查范围
+                else if (memoryItem.name.includes('位置')) {
+                    if (numericValue < 0 || numericValue > 4095) {
+                        alert('位置值必须在0-4095范围内');
+                        return;
+                    }
+                    displayValue = numericValue + ' (0-4095)';
+                }
+                // PID增益值：检查范围
+                else if (memoryItem.name.includes('增益')) {
+                    if (numericValue < 0 || numericValue > 255) {
+                        alert('PID增益值必须在0-255范围内');
+                        return;
+                    }
+                }
+            }
+
+            // 检查是否需要转换为字节数组（16位值）
+            const doubleByteAddresses = [9, 10, 11, 12, 16, 17, 28, 29, 31, 32, 35, 36,
+                                       42, 43, 44, 45, 46, 47, 48, 49, 56, 57, 58, 59, 60, 61, 67, 68];
+
+            let sendData;
+            if (doubleByteAddresses.includes(address) && writeData <= 65535) {
+                // 转换为小端序字节数组
+                sendData = [writeData & 0xFF, (writeData >> 8) & 0xFF];
+            } else if (writeData <= 255) {
+                // 单字节
+                sendData = [writeData];
+            } else {
+                alert('数值超出范围');
+                return;
+            }
+
+            controller.sendMessage({
+                type: 'write_memory',
+                servo_id: controller.selectedServoId,
+                address: address,
+                data: sendData
+            });
+
+            controller.addLog(`[内存] 写入地址 ${address.toString(16).toUpperCase()}: ${displayValue}`, 'info');
+        }
+
+        // 为controller实例添加方法
+        SeeedRoboCoreController.prototype.getServoStatus = function(servoId) {
+            this.sendMessage({
+                type: 'get_servo_status',
+                servo_id: servoId
+            });
+        };
+
+        SeeedRoboCoreController.prototype.getTemperatureLimit = function(servoId) {
+            this.sendMessage({
+                type: 'read_temperature_limit',
+                servo_id: servoId
+            });
+        };
+    </script>
+</body>
+</html>
