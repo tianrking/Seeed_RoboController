@@ -683,11 +683,17 @@ async def main():
     parser.add_argument('--port', default='COM8', help='串口名称 (默认: COM8)')
     parser.add_argument('--baudrate', type=int, default=1000000, help='波特率 (默认: 1000000)')
     parser.add_argument('--ws-port', type=int, default=8765, help='WebSocket端口 (默认: 8765)')
+    parser.add_argument('--host', default='0.0.0.0', help='WebSocket主机地址 (默认: 0.0.0.0 - 所有接口)')
 
     args = parser.parse_args()
 
     server = SeeedRoboCoreServer(args.port, args.baudrate, args.ws_port)
     server.print_startup_banner()
+
+    # 获取本机IP地址
+    import socket
+    hostname = socket.gethostname()
+    local_ip = socket.gethostbyname(hostname)
 
     # 连接硬件
     if not server.connect_hardware():
@@ -698,9 +704,20 @@ async def main():
 
     # 启动WebSocket服务器
     try:
-        async with websockets.serve(server.handle_client, "localhost", server.ws_port):
-            server._print_server_info(f"WebSocket服务器已启动: ws://localhost:{server.ws_port}", "SUCCESS")
+        async with websockets.serve(server.handle_client, args.host, server.ws_port):
+            if args.host == "0.0.0.0":
+                server._print_server_info(f"WebSocket服务器已启动: ws://localhost:{server.ws_port}", "SUCCESS")
+                server._print_server_info(f"局域网访问: ws://{local_ip}:{server.ws_port}", "SUCCESS")
+                server._print_server_info("所有网络接口已启用，支持局域网连接", "SUCCESS")
+            else:
+                server._print_server_info(f"WebSocket服务器已启动: ws://{args.host}:{server.ws_port}", "SUCCESS")
             server._print_server_info(f"在浏览器中打开 seeed_robocore_studio.html", "INFO")
+            if args.host == "0.0.0.0":
+                server._print_server_info("", "INFO")
+                server._print_server_info("局域网访问说明:", "INFO")
+                server._print_server_info(f"  1. 确保防火墙允许端口 {server.ws_port}", "INFO")
+                server._print_server_info(f"  2. 其他设备通过 ws://{local_ip}:{server.ws_port} 访问", "INFO")
+                server._print_server_info(f"  3. 或在网页中配置服务器地址为: {local_ip}", "INFO")
             server._print_server_info("-" * 60, "INFO")
             server._print_server_info("可用功能:", "INFO")
             server._print_server_info("  • 实时舵机控制 (位置、速度、加速度)", "INFO")

@@ -95,6 +95,172 @@
             border: 1px solid #E9ECEF;
         }
 
+        .connection-config-btn {
+            background: transparent;
+            border: 1px solid #CBD5E0;
+            border-radius: 4px;
+            padding: 4px 8px;
+            cursor: pointer;
+            font-size: 0.8rem;
+            transition: var(--transition);
+            color: #718096;
+        }
+
+        .connection-config-btn:hover {
+            background: var(--seeed-green);
+            border-color: var(--seeed-green);
+            color: white;
+        }
+
+        /* 紧凑型服务器配置面板 */
+        .connection-config-panel {
+            position: fixed;
+            top: 80px;
+            right: 20px;
+            background: white;
+            border: 2px solid #E9ECEF;
+            border-radius: 8px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
+            z-index: 1000;
+            width: 280px;
+            transform: scale(0.95);
+            transition: all 0.3s ease;
+        }
+
+        .connection-config-panel:hover {
+            transform: scale(1);
+        }
+
+        .config-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 12px;
+            background: var(--seeed-green);
+            color: white;
+            border-radius: 6px 6px 0 0;
+        }
+
+        .config-header span {
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
+
+        .close-btn {
+            background: transparent;
+            border: none;
+            color: white;
+            font-size: 1rem;
+            cursor: pointer;
+            padding: 0;
+            width: 20px;
+            height: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            transition: var(--transition);
+        }
+
+        .close-btn:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        .config-content {
+            padding: 12px;
+        }
+
+        .config-row {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 8px;
+        }
+
+        .config-row label {
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: #4A5568;
+            min-width: 35px;
+        }
+
+        .config-row input {
+            flex: 1;
+            border: 1px solid #CBD5E0;
+            border-radius: 4px;
+            padding: 6px 8px;
+            font-size: 0.75rem;
+        }
+
+        .quick-buttons {
+            display: flex;
+            gap: 6px;
+            margin: 10px 0;
+        }
+
+        .quick-btn {
+            flex: 1;
+            background: white;
+            border: 1px solid #CBD5E0;
+            border-radius: 4px;
+            padding: 6px 8px;
+            cursor: pointer;
+            font-size: 0.7rem;
+            transition: var(--transition);
+            color: #4A5568;
+        }
+
+        .quick-btn:hover {
+            border-color: var(--seeed-green);
+            background: #E8F5E8;
+            color: var(--seeed-green);
+        }
+
+        .config-status {
+            text-align: center;
+            font-size: 0.7rem;
+            color: #718096;
+            margin: 8px 0;
+            padding: 4px;
+            background: #F8F9FA;
+            border-radius: 4px;
+        }
+
+        .config-actions {
+            display: flex;
+            gap: 6px;
+            margin-top: 10px;
+        }
+
+        .btn-small {
+            flex: 1;
+            padding: 6px 8px;
+            font-size: 0.7rem;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: var(--transition);
+            font-weight: 500;
+        }
+
+        .btn-small {
+            background: #E2E8F0;
+            color: #4A5568;
+        }
+
+        .btn-small:hover {
+            background: #CBD5E0;
+        }
+
+        .btn-small.btn-primary {
+            background: var(--seeed-green);
+            color: white;
+        }
+
+        .btn-small.btn-primary:hover {
+            background: #00B894;
+        }
+
         .status-indicator {
             width: 10px;
             height: 10px;
@@ -871,7 +1037,39 @@
             </div>
             <div class="connection-status">
                 <div class="status-indicator" id="statusIndicator"></div>
-                <span id="connectionStatus">正在连接服务器...</span>
+                <div style="display: flex; align-items: center; gap: 10px;">
+                    <span id="connectionStatus">正在连接服务器...</span>
+                    <button class="connection-config-btn" id="connectionConfigBtn" onclick="toggleConnectionConfig()">
+                        ⚙️
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 紧凑型服务器配置面板 -->
+        <div id="connectionConfigPanel" class="connection-config-panel" style="display: none;">
+            <div class="config-header">
+                <span>🌐 服务器配置</span>
+                <button class="close-btn" onclick="toggleConnectionConfig()">×</button>
+            </div>
+            <div class="config-content">
+                <div class="config-row">
+                    <label>地址:</label>
+                    <input type="text" id="serverAddressInput" placeholder="IP地址" value="127.0.0.1">
+                </div>
+                <div class="config-row">
+                    <label>端口:</label>
+                    <input type="number" id="serverPortInput" value="8765" min="1" max="65535">
+                </div>
+                <div class="quick-buttons">
+                    <button class="quick-btn" onclick="setServerAddress('127.0.0.1', 8765)">本地</button>
+                    <button class="quick-btn" onclick="detectLocalIP()">自动</button>
+                </div>
+                <div class="config-status" id="configStatusText">未连接</div>
+                <div class="config-actions">
+                    <button class="btn-small" onclick="testConnection()">测试</button>
+                    <button class="btn-small btn-primary" onclick="connectToServer()">连接</button>
+                </div>
             </div>
         </div>
 
@@ -1048,6 +1246,12 @@
                     centerPosition: 2048
                 };
 
+                // WebSocket服务器配置
+                this.serverConfig = {
+                    host: '127.0.0.1',
+                    port: 8765
+                };
+
                 // 实时控制相关变量
                 this.controlMode = 'manual';
                 this.realtimeEnabled = false;
@@ -1061,16 +1265,20 @@
             }
 
             init() {
+                // 加载保存的服务器配置
+                this.loadServerConfig();
+                this.updateServerConfigUI();
+
                 this.connect();
                 this.addLog('[系统] Seeed RoboCore Studio 初始化完成', 'success');
-                this.addLog('[系统] 正在连接服务器...', 'info');
+                this.addLog(`[系统] 正在连接服务器 ${this.getServerUrl()}...`, 'info');
 
                 // 初始化内存表格数据
                 this.initializeMemoryTable();
             }
 
             connect() {
-                this.ws = new WebSocket('ws://localhost:8765');
+                this.ws = new WebSocket(`ws://${this.serverConfig.host}:${this.serverConfig.port}`);
 
                 this.ws.onopen = () => {
                     this.addLog('[WebSocket] 服务器连接成功', 'success');
@@ -1697,6 +1905,101 @@
                 if (entries.length > 100) {
                     logContent.removeChild(entries[0]);
                 }
+            }
+
+            // WebSocket服务器配置方法
+            getServerUrl() {
+                return `${this.serverConfig.host}:${this.serverConfig.port}`;
+            }
+
+            loadServerConfig() {
+                const saved = localStorage.getItem('seeed_server_config');
+                if (saved) {
+                    try {
+                        const config = JSON.parse(saved);
+                        this.serverConfig = { ...this.serverConfig, ...config };
+                    } catch (e) {
+                        this.addLog('[配置] 加载服务器配置失败，使用默认设置', 'warning');
+                    }
+                }
+            }
+
+            saveServerConfig() {
+                localStorage.setItem('seeed_server_config', JSON.stringify(this.serverConfig));
+                this.addLog('[配置] 服务器配置已保存', 'success');
+            }
+
+            updateServerConfigUI() {
+                document.getElementById('serverAddressInput').value = this.serverConfig.host;
+                document.getElementById('serverPortInput').value = this.serverConfig.port;
+            }
+
+            setServerAddress(host, port) {
+                this.serverConfig.host = host;
+                this.serverConfig.port = port;
+                this.updateServerConfigUI();
+
+                // 更新按钮状态
+                document.querySelectorAll('.server-btn').forEach(btn => {
+                    btn.classList.remove('active');
+                });
+                event.target.classList.add('active');
+            }
+
+            testConnection() {
+                const host = document.getElementById('serverAddressInput').value.trim();
+                const port = parseInt(document.getElementById('serverPortInput').value);
+
+                if (!host || !port || port < 1 || port > 65535) {
+                    alert('请输入有效的服务器地址和端口');
+                    return;
+                }
+
+                this.addLog(`[测试] 正在测试连接 ${host}:${port}...`, 'info');
+
+                const testWs = new WebSocket(`ws://${host}:${port}`);
+                const timeout = setTimeout(() => {
+                    testWs.close();
+                    this.addLog('[测试] 连接超时', 'error');
+                }, 5000);
+
+                testWs.onopen = () => {
+                    clearTimeout(timeout);
+                    this.addLog('[测试] 连接成功！', 'success');
+                    testWs.close();
+                };
+
+                testWs.onerror = () => {
+                    clearTimeout(timeout);
+                    this.addLog('[测试] 连接失败', 'error');
+                };
+            }
+
+            connectToNewServer() {
+                const host = document.getElementById('serverAddressInput').value.trim();
+                const port = parseInt(document.getElementById('serverPortInput').value);
+
+                if (!host || !port || port < 1 || port > 65535) {
+                    alert('请输入有效的服务器地址和端口');
+                    return;
+                }
+
+                // 关闭当前连接
+                if (this.ws) {
+                    this.ws.close();
+                }
+
+                // 更新配置
+                this.serverConfig.host = host;
+                this.serverConfig.port = port;
+                this.saveServerConfig();
+
+                // 重置重连计数
+                this.reconnectAttempts = 0;
+
+                // 连接到新服务器
+                this.connect();
+                this.addLog(`[连接] 正在连接到新服务器 ${this.getServerUrl()}...`, 'info');
             }
         }
 
@@ -2329,6 +2632,63 @@
             });
 
             controller.addLog(`[内存] 写入地址 ${address.toString(16).toUpperCase()}: ${displayValue}`, 'info');
+        }
+
+        // WebSocket配置相关全局函数
+        function toggleConnectionConfig() {
+            const panel = document.getElementById('connectionConfigPanel');
+            if (panel.style.display === 'none') {
+                panel.style.display = 'block';
+            } else {
+                panel.style.display = 'none';
+            }
+        }
+
+        function setServerAddress(host, port) {
+            controller.setServerAddress(host, port);
+        }
+
+        function detectLocalIP() {
+            // 尝试自动检测本地IP
+            controller.addLog('[检测] 正在检测本地网络IP...', 'info');
+
+            // 获取本地IP的简单方法
+            const rtc = new RTCPeerConnection({iceServers: []});
+            rtc.createDataChannel('');
+            rtc.createOffer()
+                .then(offer => rtc.setLocalDescription(offer))
+                .then(() => {
+                    const lines = rtc.localDescription.sdp.split('\n');
+                    const line = lines.find(line => line.startsWith('a=candidate:'));
+                    if (line) {
+                        const parts = line.split(' ');
+                        const ip = parts[4];
+                        if (ip && ip !== '127.0.0.1' && ip.startsWith('192.168.')) {
+                            controller.addLog(`[检测] 发现本地IP: ${ip}`, 'success');
+                            document.getElementById('serverAddressInput').value = ip;
+
+                            // 更新按钮状态
+                            document.querySelectorAll('.server-btn').forEach(btn => {
+                                btn.classList.remove('active');
+                            });
+                        } else {
+                            controller.addLog('[检测] 未找到合适的本地IP，请手动输入', 'warning');
+                        }
+                    }
+                })
+                .catch(error => {
+                    controller.addLog('[检测] 自动检测失败，请手动输入IP地址', 'warning');
+                });
+        }
+
+        function testConnection() {
+            controller.testConnection();
+        }
+
+        function connectToServer() {
+            controller.connectToNewServer();
+            // 关闭配置面板
+            document.getElementById('connectionConfigPanel').style.display = 'none';
         }
 
         // 为controller实例添加方法
