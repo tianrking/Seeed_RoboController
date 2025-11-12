@@ -27,7 +27,7 @@
 
 1. **启动系统**
    ```bash
-   python seeed_robocore_server.py
+   python server.py
    ```
 
 2. **打开Web界面**

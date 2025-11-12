@@ -503,15 +503,15 @@ class SeeedRoboCoreServer:
                 try:
                     read_data, result, error = self.read_memory_direct(servo_id, address, length)
 
-                    # 转换为十六进制字符串
-                    data_hex = read_data.hex() if read_data else None
+                    # 转换为字节数组（确保客户端能正确处理）
+                    data_array = list(read_data) if read_data else None
 
                     await websocket.send(json.dumps({
                         'type': 'memory_read',
                         'servo_id': servo_id,
                         'address': address,
                         'length': length,
-                        'data': data_hex,
+                        'data': data_array,
                         'success': result == 0,
                         'error': error if result != 0 else None
                     }))

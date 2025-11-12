@@ -136,8 +136,8 @@
 
 ### 1. 快速开始
 ```bash
-python seeed_robocore_server.py
-# 打开 seeed_robocore_studio_optimized.html
+python server.py
+# 打开 seeed_robocore_studio.html
 ```
 
 ### 2. 设备发现

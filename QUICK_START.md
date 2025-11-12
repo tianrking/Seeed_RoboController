@@ -8,7 +8,7 @@
 cd diy_tool/
 
 # 启动服务器
-python seeed_robocore_server.py
+python server.py
 ```
 
 看到以下输出表示启动成功：
@@ -68,7 +68,7 @@ python seeed_robocore_server.py
 
 ### 自定义端口启动
 ```bash
-python seeed_robocore_server.py --port COM9 --baudrate 1000000
+python server.py --port COM9 --baudrate 1000000
 ```
 
 ### WebSocket API测试
