@@ -37,11 +37,13 @@ class RemoteControlWorker(QObject):
     control_started = Signal()  # 遥控启动信号
     control_stopped = Signal()  # 遥控停止信号
 
-    def __init__(self):
+    def __init__(self, read_port=None, control_port=None):
         super().__init__()
         self.remote_process = None
         self.running = False
-        self.project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), '../../'))
+        self.project_root = os.path.abspath(os.path.dirname(__file__))
+        self.read_port = read_port
+        self.control_port = control_port
 
     def start_remote_control(self):
         """启动遥控操作"""
@@ -55,9 +57,16 @@ class RemoteControlWorker(QObject):
             if not os.path.exists(remote_script_path):
                 return False, f"遥控脚本不存在: {remote_script_path}"
 
+            # 构建命令参数
+            command = [sys.executable, remote_script_path]
+            if self.read_port:
+                command.extend(['--read-port', self.read_port])
+            if self.control_port:
+                command.extend(['--control-port', self.control_port])
+
             # 启动子进程运行遥控脚本
             self.remote_process = subprocess.Popen(
-                [sys.executable, remote_script_path],
+                command,
                 stdout=subprocess.PIPE,
                 stderr=subprocess.STDOUT,
                 universal_newlines=True,
@@ -1187,8 +1196,11 @@ class EZToolUI(QMainWindow):
     def toggle_remote_control(self):
         """切换遥控操作"""
         if self.remote_worker is None:
-            # 创建遥控工作线程
-            self.remote_worker = RemoteControlWorker()
+            # 创建遥控工作线程，传递当前选择的端口
+            self.remote_worker = RemoteControlWorker(
+                read_port=self.left_port,    # 左端口用于读取
+                control_port=self.right_port # 右端口用于控制
+            )
             self.remote_worker.log_message.connect(self.add_remote_log)
             self.remote_worker.control_started.connect(self.on_remote_started)
             self.remote_worker.control_stopped.connect(self.on_remote_stopped)

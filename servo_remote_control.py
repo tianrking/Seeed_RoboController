@@ -9,6 +9,7 @@ Ultra responsive version for minimal lag
 import sys
 import os
 import time
+import argparse
 
 # 添加SCServo SDK路径
 project_root = os.path.dirname(os.path.abspath(__file__))
@@ -25,9 +26,9 @@ except ImportError as e:
 
 
 class UltraFastRemoteControl:
-    def __init__(self):
-        self.master_port = "COM7"  # 纯读取角度
-        self.slave_port = "COM8"   # 控制舵机
+    def __init__(self, read_port="COM7", control_port="COM8"):
+        self.master_port = read_port    # 纯读取角度
+        self.slave_port = control_port  # 控制舵机
         self.baud_rate = 1000000
         self.servo_ids = [1, 2, 3, 4, 5, 6]  # 舵机ID范围
         self.running = False
@@ -258,13 +259,23 @@ class UltraFastRemoteControl:
 
 def main():
     """Main function"""
+    # 解析命令行参数
+    parser = argparse.ArgumentParser(description='Ultra Fast Remote Control System')
+    parser.add_argument('--read-port', default='COM7', help='Port for reading servo angles (default: COM7)')
+    parser.add_argument('--control-port', default='COM8', help='Port for controlling servos (default: COM8)')
+
+    args = parser.parse_args()
+
     print("ULTRA FAST Remote Control System v1.0")
-    print("Function: Read servo angles from COM7 -> Sync control to COM8")
+    print(f"Function: Read servo angles from {args.read_port} -> Sync control to {args.control_port}")
     print("Performance: 10ms update interval for MINIMAL LAG")
     print("Author: Assistant")
     print()
 
-    remote_control = UltraFastRemoteControl()
+    remote_control = UltraFastRemoteControl(
+        read_port=args.read_port,
+        control_port=args.control_port
+    )
     remote_control.run()
 
 
